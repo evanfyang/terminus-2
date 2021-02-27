@@ -1,0 +1,3 @@
+[submodule "lib/wcdest"]
+	path = lib/wcdest
+	url = https://github.com/shaze/wcdest.git
