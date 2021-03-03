@@ -4,8 +4,8 @@ import sys
 import subprocess
 
 from tqdm import tqdm
-from arguments import parse_arguments
-from extraction import extract_telomeric_reads
+from treca.arguments import parse_arguments
+from treca.extraction import extract_telomeric_reads
 
 def main():
     interleaved_fastq_path, r1_fastq_path, r2_fastq_path = parse_arguments()

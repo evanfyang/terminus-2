@@ -19,7 +19,7 @@ end_tel_regex = "(TTAGGGTTAGGGTTAGGG)+$|G(TTAGGGTTAGGGTTAGGG)+$|GG(TTAGGGTTAGGGT
 # find the number of lines in a file via system call to wc
 def get_num_lines(file_path):
     out = subprocess.Popen(['wc', '-l', file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout,stderr = out.communicate()
+    stdout, stderr = out.communicate()
     return int(stdout.split()[0])
 
 # add a file to the end of another file and delete the appended file

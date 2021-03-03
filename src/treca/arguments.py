@@ -1,6 +1,6 @@
 import sys
 import argparse
-from validation import validate_file
+from treca.validation import validate_file
 
 def parse_arguments():
     # define parser for arguments
