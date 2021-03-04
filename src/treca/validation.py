@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os
 
 def validate_file(fastq_path, extension, read):
