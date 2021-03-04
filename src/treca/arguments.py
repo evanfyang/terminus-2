@@ -10,7 +10,7 @@ def parse_arguments():
     parser.add_argument("-i", metavar="interleaved.fastq", nargs=1, help="specify path to FASTQ file containing interleaved paired-end reads")
     parser.add_argument("-r1", metavar="forward_reads.fastq", nargs=1, help="specify path to FASTQ file containing R1 pair-end reads")
     parser.add_argument("-r2", metavar="reverse_reads.fastq", nargs=1, help="specify path to FASTQ file containing R2 pair-end reads")
-    parser.add_argument("-o", metavar="out_filepath", help="specify path to directory to store output files")
+    parser.add_argument("-o", metavar="out_directory", help="specify path to directory to store output files")
     parser.add_argument("-n", metavar="n_ratio", default=0.5, help="throw out reads with a ratio of N's greater than specified")
     args = vars(parser.parse_args())
 
@@ -25,8 +25,8 @@ def parse_arguments():
         interleaved_fastq_path = args["r1"]
         interleaved_extension = interleaved_fastq_path.split("/")[-1].split(".")[-1]
         validate_file(interleaved_fastq_path, interleaved_extension, "interleaved")
-        out_filepath = args["o"]
-        return interleaved_fastq_path, None, None, out_filepath
+        out_directory = args["o"]
+        return interleaved_fastq_path, None, None, out_directory
     
     if args["i"] is None and args["r1"] and args["r2"]:
         # validate forward read FASTQ file
@@ -39,9 +39,9 @@ def parse_arguments():
         r2_extension = r2_fastq_path.split("/")[-1].split(".")[-1]
         validate_file(r2_fastq_path, r2_extension, "reverse")
 
-        out_filepath = args["o"]
+        out_directory = args["o"]
 
-        return None, r1_fastq_path, r2_fastq_path, out_filepath
+        return None, r1_fastq_path, r2_fastq_path, out_directory
 
 if __name__ == "__main__":
     parse_arguments()

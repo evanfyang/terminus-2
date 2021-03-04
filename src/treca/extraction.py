@@ -8,63 +8,62 @@ from tqdm import tqdm
 # define constants
 HEADER = 1
 SEQUENCE = 2
-NUM_LINES = 92475176
+
+FORWARD = 1
+REVERSE = 2
+
 FA_LINES_PER_READ = 2
 FQ_LINES_PER_READ = 4
 
-# define lookup dictionary for read direction
 # define regular expressions for matching telomeric sequences
-read_type = {"forward":1, "reverse":2}
 start_tel_regex = "^(CCCTAACCCTAACCCTAA)+|^A(CCCTAACCCTAACCCTAA)+|^AA(CCCTAACCCTAACCCTAA)+|^TAA(CCCTAACCCTAACCCTAA)+|^CTAA(CCCTAACCCTAACCCTAA)+|^CCTAA(CCCTAACCCTAACCCTAA)+"
 end_tel_regex = "(TTAGGGTTAGGGTTAGGG)+$|G(TTAGGGTTAGGGTTAGGG)+$|GG(TTAGGGTTAGGGTTAGGG)+$|GGG(TTAGGGTTAGGGTTAGGG)+$|AGGG(TTAGGGTTAGGGTTAGGG)+$|TAGGG(TTAGGGTTAGGGTTAGGG)+$"
 
 class SequenceData:
-    def __init__(self, read_filepath, read_type, out_filepath = None):
+    def __init__(self, read_filepath, read_type, out_directory = None):
         self._read_filepath = read_filepath
         self._read_type = read_type
-        self._out_filepath = out_filepath
+        self._out_directory = out_directory
+        self._r1_telomeric_reads_filepath = None
+        self._r2_telomeric_reads_filepath = None
     
     def get_read_filepath(self):
         return self._read_filepath
+    
     def get_read_type(self):
         return self._read_type
-    def get_outfile_path(self):
-        return self._out_filepath
+    
+    def get_out_directory(self):
+        return self._out_directory
+    
+    def get_r1_telomeric_reads_filepath(self):
+        return self._r1_telomeric_reads_filepath
+    
+    def get_r2_telomeric_reads_filepath(self):
+        return self._r2_telomeric_reads_filepath
     
     def extract_telomeric_reads(self):
         if self._read_type == "interleaved":
-            path_prefix = "/".join(self._read_filepath.split("/")[0:-1]) + "/tel_reads/"
-            os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
-            self._out_filepath = path_prefix + self._read_filepath.split("/")[-1].split(".")[0] + "_telomeric_reads.fasta"
-            fastq_output = open(self._out_filepath, "w+")
-
-            # code for extracting from an interleaved file here...
-
-        else:  
-            if self._read_type == "forward":
-                print()
-                print("Extracting telomeric reads from R1 FASTQ dataset...")
-                print()
+            print("Extracting telomeric reads from an interleaved FASTQ dataset...")
+            print()
+            if self._out_directory == None: 
                 path_prefix = "/".join(self._read_filepath.split("/")[0:-1]) + "/tel_reads/"
-                os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
-                self._out_filepath = path_prefix + self._read_filepath.split("/")[-1].split(".")[0] + "_telomeric_reads.fasta"
-                fastq_output = open(self._out_filepath, "w+")
-            if self._read_type == "reverse":
-                print()
-                print("Extracting telomeric reads from R2 FASTQ dataset...")
-                print()
-                path_prefix = "/".join(self._read_filepath.split("/")[0:-1]) + "/tel_reads/"
-                os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
-                out_file_path = path_prefix + self._read_filepath.split("/")[-1].split(".")[0] + "_telomeric_reads.fasta"
-                fastq_output = open(out_file_path, "w+")
+            else:
+                path_prefix = self._out_directory + "/tel_reads/"
             
-            line_counter = 1
+            os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
+
+            self._r1_telomeric_reads_filepath = path_prefix + self._read_filepath.split("/")[-1].split(".")[0] + "r1_telomeric_reads.fasta"
+            r1_telomeric_reads_output = open(self._r1_telomeric_reads_filepath, "w+")
+
+            self._r2_telomeric_reads_filepath = path_prefix + self._read_filepath.split("/")[-1].split(".")[0] + "r2_telomeric_reads.fasta"
+            r2_telomeric_reads_output = open(self._r2_telomeric_reads_filepath, "w+")
+            
+            line_counter = 0
             header_line = ""
-            # for each 4 lines in the FASTQ file, attempt to match the sequence line to
-            # the regular expressions defined. If a match occurs, write both the 
-            # sequence and header to file
-            with open(self._read_filepath) as fastq_input:
-                for line in fastq_input:
+            with open(self._read_filepath) as sequence_reads:
+                for line in sequence_reads:
+                    line_counter += 1
                     if line_counter % FQ_LINES_PER_READ == HEADER:
                         header_line = line
                         # replace for output to FASTA format 
@@ -73,15 +72,56 @@ class SequenceData:
                         start_tel_exists = re.search(start_tel_regex, line)
                         end_tel_exists = re.search(end_tel_regex, line)
                         if bool(start_tel_exists) ^ bool(end_tel_exists):
-                            fastq_output.write(header_line)
-                            fastq_output.write(line)
-                    line_counter += 1
+                            if int(header_line.split(" ")[1].split(":")[0]) == FORWARD:
+                                r1_telomeric_reads_output.write(header_line)
+                                r1_telomeric_reads_output.write(line)
+                            if int(header_line.split(" ")[1].split(":")[0]) == REVERSE:
+                                r2_telomeric_reads_output.write(header_line)
+                                r2_telomeric_reads_output.write(line)
+        else:  
+            if self._read_type == "forward":
+                print("Extracting telomeric reads from R1 FASTQ dataset...")
+                print()
+                
+                if self._out_directory == None: 
+                    path_prefix = "/".join(self._read_filepath.split("/")[0:-1]) + "/tel_reads/"
+                else:
+                    path_prefix = self._out_directory + "/tel_reads/"
 
-# find the number of lines in a file via system call to wc
-def get_num_lines(file_path):
-    out = subprocess.Popen(['wc', '-l', file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, stderr = out.communicate()
-    return int(stdout.split()[0])
+                os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
+                self._r1_telomeric_reads_filepath = path_prefix + self._read_filepath.split("/")[-1].split(".")[0] + "r1_telomeric_reads.fasta"
+                telomeric_reads_output = open(self._r1_telomeric_reads_filepath, "w+")
+            if self._read_type == "reverse":
+                print("Extracting telomeric reads from R2 FASTQ dataset...")
+                print()
+
+                if self._out_directory == None: 
+                    path_prefix = "/".join(self._read_filepath.split("/")[0:-1]) + "/tel_reads/"
+                else:
+                    path_prefix = self._out_directory + "/tel_reads/"
+
+                os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
+                self._r2_telomeric_reads_filepath = path_prefix + self._read_filepath.split("/")[-1].split(".")[0] + "r2_telomeric_reads.fasta"
+                telomeric_reads_output = open(self._r2_telomeric_reads_filepath, "w+")
+            
+            line_counter = 0
+            header_line = ""
+            # for each 4 lines in the FASTQ file, attempt to match the sequence line to
+            # the regular expressions defined. If a match occurs, write both the 
+            # sequence and header to file
+            with open(self._read_filepath) as fastq_input:
+                for line in fastq_input:
+                    line_counter += 1
+                    if line_counter % FQ_LINES_PER_READ == HEADER:
+                        header_line = line
+                        # replace for output to FASTA format 
+                        header_line = header_line.replace("@", ">")
+                    if line_counter % FQ_LINES_PER_READ == SEQUENCE:
+                        start_tel_exists = re.search(start_tel_regex, line)
+                        end_tel_exists = re.search(end_tel_regex, line)
+                        if bool(start_tel_exists) ^ bool(end_tel_exists):
+                            telomeric_reads_output.write(header_line)
+                            telomeric_reads_output.write(line)
 
 # add a file to the end of another file and delete the appended file
 def append_file(filepath1, filepath2):
