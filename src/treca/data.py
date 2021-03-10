@@ -95,9 +95,9 @@ class SequenceData:
         if self._read_type == "interleaved":
             print("Extracting telomeric reads from an interleaved FASTQ dataset...")
             if self._out_directory == None: 
-                path_prefix = "/".join(self._interleaved_read_filepath.split("/")[0:-1]) + "/tel_reads/"
+                path_prefix = "/".join(self._interleaved_read_filepath.split("/")[0:-1]) + "/telomeric_reads/"
             else:
-                path_prefix = self._out_directory + "/tel_reads/"
+                path_prefix = self._out_directory + "/telomeric_reads/"
             
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
 
@@ -117,9 +117,9 @@ class SequenceData:
             print("Extracting telomeric reads from R1 FASTQ dataset...")
             
             if self._out_directory == None: 
-                path_prefix = "/".join(self._r1_read_filepath.split("/")[0:-1]) + "/tel_reads/"
+                path_prefix = "/".join(self._r1_read_filepath.split("/")[0:-1]) + "/telomeric_reads/"
             else:
-                path_prefix = self._out_directory + "/tel_reads/"
+                path_prefix = self._out_directory + "/telomeric_reads/"
 
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
             self._r1_telomeric_reads_filepath = path_prefix + self._r1_read_filepath.split("/")[-1].split(".")[0] + "r1_telomeric_reads.fasta"
@@ -131,9 +131,9 @@ class SequenceData:
             print("Extracting telomeric reads from R2 FASTQ dataset...")
 
             if self._out_directory == None: 
-                path_prefix = "/".join(self._r2_read_filepath.split("/")[0:-1]) + "/tel_reads/"
+                path_prefix = "/".join(self._r2_read_filepath.split("/")[0:-1]) + "/telomeric_reads/"
             else:
-                path_prefix = self._out_directory + "/tel_reads/"
+                path_prefix = self._out_directory + "/telomeric_reads/"
 
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
             self._r2_telomeric_reads_filepath = path_prefix + self._r2_read_filepath.split("/")[-1].split(".")[0] + "r2_telomeric_reads.fasta"
@@ -146,31 +146,6 @@ class SequenceData:
             print("R2 telomeric reads saved to '" + self._r2_telomeric_reads_filepath + "'")
             print("\n")
     
-    def _process_reads(self, input_filepath, r1_output, r2_output):
-        # define regular expressions for matching telomeric sequences
-        start_tel_regex = "^(CCCTAACCCTAACCCTAA)+|^A(CCCTAACCCTAACCCTAA)+|^AA(CCCTAACCCTAACCCTAA)+|^TAA(CCCTAACCCTAACCCTAA)+|^CTAA(CCCTAACCCTAACCCTAA)+|^CCTAA(CCCTAACCCTAACCCTAA)+"
-        end_tel_regex = "(TTAGGGTTAGGGTTAGGG)+$|G(TTAGGGTTAGGGTTAGGG)+$|GG(TTAGGGTTAGGGTTAGGG)+$|GGG(TTAGGGTTAGGGTTAGGG)+$|AGGG(TTAGGGTTAGGGTTAGGG)+$|TAGGG(TTAGGGTTAGGGTTAGGG)+$"
-
-        line_counter = 0
-        header_line = ""
-        with open(input_filepath) as sequence_reads:
-            for line in sequence_reads:
-                line_counter += 1
-                if line_counter % FQ_LINES_PER_READ == HEADER:
-                    header_line = line
-                    # replace for output to FASTA format 
-                    header_line = header_line.replace("@", ">")
-                if line_counter % FQ_LINES_PER_READ == SEQUENCE:
-                    start_tel_exists = re.search(start_tel_regex, line)
-                    end_tel_exists = re.search(end_tel_regex, line)
-                    if bool(start_tel_exists) ^ bool(end_tel_exists):
-                        if int(header_line.split(" ")[1].split(":")[0]) == FORWARD:
-                            r1_output.write(header_line)
-                            r1_output.write(line)
-                        if int(header_line.split(" ")[1].split(":")[0]) == REVERSE:
-                            r2_output.write(header_line)
-                            r2_output.write(line)
-
     def cluster_telomeric_reads(self):   
         # install and make wcd for clustering         # install and make wcd for clustering
         print("Installing and preparing wcdest for clustering...\n")
@@ -182,9 +157,9 @@ class SequenceData:
         print("\nDone.\n")
 
         if self._out_directory == None: 
-            path_prefix = "/".join(self._r1_telomeric_reads_filepath.split("/")[0:-2]) + "/clusters/cluster_info/tel_reads/"
+            path_prefix = "/".join(self._r1_telomeric_reads_filepath.split("/")[0:-2]) + "/clusters/cluster_info/telomeric_reads/"
         else:
-            path_prefix = self._out_directory + "/clusters/cluster_info/tel_reads/"
+            path_prefix = self._out_directory + "/clusters/cluster_info/telomeric_reads/"
         os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
         self._r1_clustered_telomeric_reads_info_filepath = path_prefix + self._r1_telomeric_reads_filepath.split("/")[-1].split(".")[0] + ".ans"
         self._r2_clustered_telomeric_reads_info_filepath = path_prefix + self._r2_telomeric_reads_filepath.split("/")[-1].split(".")[0] + ".ans"
@@ -227,7 +202,11 @@ class SequenceData:
     def cluster_subtelomeric_reads(self):
         print("Clustering subtelomeric reads in " + self._r1_subtelomeric_reads_filepath + "...")
         # prepare directories for writing results of clustering 
-        path_prefix = "/".join(self._r1_telomeric_reads_filepath.split("/")[0:-2]) + "/clusters/cluster_info/subtel_reads/r1/"
+        if self._out_directory == None: 
+            path_prefix = "/".join(self._r1_telomeric_reads_filepath.split("/")[0:-2]) + "/clusters/cluster_info/subtelomeric_reads/r1/"
+        else:
+            path_prefix = self._out_directory + "/clusters/cluster_info/subtelomeric_reads/r1/"
+    
         os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
         # cluster every forward subtelomeric read file obtained from a corresponding 
         # reverse telomeric read cluster
@@ -243,7 +222,7 @@ class SequenceData:
         # forward telomeric read cluster
         print("Clustering subtelomeric reads in " + self._r2_subtelomeric_reads_filepath + "...")
         # prepare directories for writing results of clustering 
-        path_prefix = "/".join(self._r2_telomeric_reads_filepath.split("/")[0:-2]) + "/clusters/cluster_info/subtel_reads/r2/"
+        path_prefix = "/".join(self._r2_telomeric_reads_filepath.split("/")[0:-2]) + "/clusters/cluster_info/subtelomeric_reads/r2/"
         os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
         # cluster every forward subtelomeric read file obtained from a corresponding 
         # reverse telomeric read cluster
@@ -254,7 +233,32 @@ class SequenceData:
                 self._r2_clustered_subtelomeric_reads_filepath = self._get_clustered_tels(self._r2_telomeric_reads_filepath, self._r2_clustered_subtelomeric_reads_info_filepath, "forward", "subtel")
         print("Clustering results saved to '" + self._r2_clustered_subtelomeric_reads_filepath + "'")        
         print("Done.\n")
+    
+    def _process_reads(self, input_filepath, r1_output, r2_output):
+        # define regular expressions for matching telomeric sequences
+        start_tel_regex = "^(CCCTAACCCTAACCCTAA)+|^A(CCCTAACCCTAACCCTAA)+|^AA(CCCTAACCCTAACCCTAA)+|^TAA(CCCTAACCCTAACCCTAA)+|^CTAA(CCCTAACCCTAACCCTAA)+|^CCTAA(CCCTAACCCTAACCCTAA)+"
+        end_tel_regex = "(TTAGGGTTAGGGTTAGGG)+$|G(TTAGGGTTAGGGTTAGGG)+$|GG(TTAGGGTTAGGGTTAGGG)+$|GGG(TTAGGGTTAGGGTTAGGG)+$|AGGG(TTAGGGTTAGGGTTAGGG)+$|TAGGG(TTAGGGTTAGGGTTAGGG)+$"
 
+        line_counter = 0
+        header_line = ""
+        with open(input_filepath) as sequence_reads:
+            for line in sequence_reads:
+                line_counter += 1
+                if line_counter % FQ_LINES_PER_READ == HEADER:
+                    header_line = line
+                    # replace for output to FASTA format 
+                    header_line = header_line.replace("@", ">")
+                if line_counter % FQ_LINES_PER_READ == SEQUENCE:
+                    start_tel_exists = re.search(start_tel_regex, line)
+                    end_tel_exists = re.search(end_tel_regex, line)
+                    if bool(start_tel_exists) ^ bool(end_tel_exists):
+                        if int(header_line.split(" ")[1].split(":")[0]) == FORWARD:
+                            r1_output.write(header_line)
+                            r1_output.write(line)
+                        if int(header_line.split(" ")[1].split(":")[0]) == REVERSE:
+                            r2_output.write(header_line)
+                            r2_output.write(line)
+    
     # retrieve telomeric reads based on clustering by wcdest
     def _get_clustered_tels(self, tel_path, tel_clusters_info_path, read, type):
         tel_clusters = list()
@@ -279,22 +283,22 @@ class SequenceData:
             # specify where to save FASTA files based on read direction and the 
             # type reads that are being clustered 
             if read == "forward" and type == "tel":
-                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r1_tel/"
+                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r1_telomeric_reads/"
                 os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
                 out_file_path = path_prefix + tel_path.split("/")[-1].split(".")[0] + "_cluster"+ str(rows[row_idx]) +".fasta"
                 clustered_tel_output = open(out_file_path, "w+")
             if read == "reverse" and type == "tel":
-                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r2_tel/"
+                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r2_telomeric_reads/"
                 os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
                 out_file_path = path_prefix + tel_path.split("/")[-1].split(".")[0] + "_cluster"+ str(rows[row_idx]) +".fasta"
                 clustered_tel_output = open(out_file_path, "w+")
             if read == "forward" and type == "subtel":
-                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r1_subtel/"
+                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r1_subtelomeric_reads/"
                 os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
                 out_file_path = path_prefix + tel_path.split("/")[-1].split(".")[0] + "_cluster"+ str(rows[row_idx]) +".fasta"
                 clustered_tel_output = open(out_file_path, "w+")
             if read == "reverse" and type == "subtel":
-                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r2_subtel/"
+                path_prefix = "/".join(tel_path.split("/")[0:-2]) + "/clusters/r2_subtelomeric_reads/"
                 os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
                 out_file_path = path_prefix + tel_path.split("/")[-1].split(".")[0] + "_cluster"+ str(rows[row_idx]) +".fasta"
                 clustered_tel_output = open(out_file_path, "w+")
@@ -334,13 +338,13 @@ class SequenceData:
                 line_counter += 1
         # specify where to save FASTA files based on the read type
         if read == "forward":
-            path_prefix = "/".join(tel_path.split("/")[0:-3]) + "/paired_ends/r1_subtel/"
+            path_prefix = "/".join(tel_path.split("/")[0:-3]) + "/paired_ends/r1_subtelomeric_reads/"
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
             out_file_path = path_prefix + "/" + tel_path.split("/")[-1].split(".")[0] + ".fasta"
             out_file_path = out_file_path.replace("telomeric", "subtelomeric")
             fastq_output = open(out_file_path, "w+")
         if read == "reverse":
-            path_prefix = "/".join(tel_path.split("/")[0:-3]) + "/paired_ends/r2_subtel/"
+            path_prefix = "/".join(tel_path.split("/")[0:-3]) + "/paired_ends/r2_subtelomeric_reads/"
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
             out_file_path = path_prefix + "/" + tel_path.split("/")[-1].split(".")[0] + ".fasta"
             out_file_path = out_file_path.replace("telomeric", "subtelomeric")
