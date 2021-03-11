@@ -45,5 +45,15 @@ def parse_arguments():
 
         return None, r1_fastq_path, r2_fastq_path, out_directory
 
+def print_title():
+    # print title box 
+    print()
+    title = "TELOMERIC READ EXTRACTION, CLUSTERING, AND ASSEMBLY"
+    row = len(title)
+    h = "".join(["+"] + ["-" *row] + ["+"])
+    title_box= h + '\n'"|"+title+"|"'\n' + h
+    print(title_box)
+    print()
+
 if __name__ == "__main__":
     parse_arguments()

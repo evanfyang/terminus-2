@@ -147,14 +147,18 @@ class SequenceData:
             print()
     
     def cluster_telomeric_reads(self):   
-        # install and make wcd for clustering         # install and make wcd for clustering
-        print("Installing and preparing wcdest for clustering...\n")
-        os.system("git submodule update --init --recursive")
-        os.system("../lib/wcdest/code/configure >/dev/null 2>&1")
-        os.system("make clean -C ../lib/wcdest/code/ >/dev/null 2>&1")
-        os.system("make -C ../lib/wcdest/code/ >/dev/null 2>&1")
-        os.system("make install -C ../lib/wcdest/code/ >/dev/null 2>&1")
-        print("\nDone.\n")
+        # install and make wcd for clustering
+        print("Installing and preparing wcdest for clustering...")
+        os.chdir("..")
+        os.system("git submodule update --init --recursive >/dev/null 2>&1")
+        os.chdir("./lib/wcdest/code/")
+        os.system("./configure >/dev/null 2>&1")
+        # NOTE: texinfo/makeinfo must be installed for wcdest to compile correctly!! 
+        os.system("make clean -C ./ >/dev/null 2>&1")
+        os.system("make -C ./ >/dev/null 2>&1")
+        os.system("make install -C ./ >/dev/null 2>&1")
+        os.chdir("../../../src")
+        print("Done.\n")
 
         if self._out_directory == None: 
             path_prefix = "/".join(self._r1_telomeric_reads_filepath.split("/")[0:-2]) + "/clusters/cluster_info/telomeric_reads/"
@@ -166,18 +170,19 @@ class SequenceData:
 
         # cluster forward telomeric reads and write results to file 
         print("Clustering telomeric reads in '" + self._r1_telomeric_reads_filepath + "'...")
-        os.system("./wcdest/code/src/wcd -o " + self._r1_clustered_telomeric_reads_info_filepath + " -c " + self._r1_telomeric_reads_filepath + " >/dev/null 2>&1")
+        os.system("../lib/wcdest/code/src/wcd -o " + self._r1_clustered_telomeric_reads_info_filepath + " -c " + self._r1_telomeric_reads_filepath)# + " >/dev/null 2>&1")
         self._r1_clustered_telomeric_reads_filepath = self._get_clustered_tels(self._r1_telomeric_reads_filepath, self._r1_clustered_telomeric_reads_info_filepath, "forward", "tel")
-        print("Clustering results saved to '" + self._r1_clustered_telomeric_reads_filepath + "'")
         print("Done.\n")
+        print("Clustering results saved to '" + self._r1_clustered_telomeric_reads_filepath + "'\n")
+ 
         
         # cluster reverse telomeric reads and write results to file 
         print("Clustering telomeric reads in '" + self._r2_telomeric_reads_filepath + "'...")
-        os.system("./wcdest/code/src/wcd -o " + self._r2_clustered_telomeric_reads_info_filepath + " -c " + self._r2_telomeric_reads_filepath + " >/dev/null 2>&1")
+        os.system("../lib/wcdest/code/src/wcd -o " + self._r2_clustered_telomeric_reads_info_filepath + " -c " + self._r2_telomeric_reads_filepath + " >/dev/null 2>&1")
         self._r2_clustered_telomeric_reads_filepath = self._get_clustered_tels(self._r2_telomeric_reads_filepath, self._r2_clustered_telomeric_reads_info_filepath, "forward", "tel")
-        print("Clustering results saved to '" + self._r2_clustered_telomeric_reads_filepath + "'")
         print("Done.\n")
-    
+        print("Clustering results saved to '" + self._r2_clustered_telomeric_reads_filepath + "'\n")
+
     def extract_subtelomeric_reads(self):
         # given forward telomeric clusters, retrieve the subtelomeric sequence reads
         #  from the reverse read file  
@@ -213,7 +218,7 @@ class SequenceData:
         for subtel_file in os.listdir(self._r1_subtelomeric_reads_filepath):
             if subtel_file.endswith(".fasta"): 
                 self._r1_clustered_subtelomeric_reads_info_filepath = path_prefix + subtel_file.split(".")[0] + ".ans"
-                os.system("./wcdest/code/src/wcd -o " + self._r1_clustered_subtelomeric_reads_info_filepath + " -c " + self._r1_subtelomeric_reads_filepath + subtel_file + " >/dev/null 2>&1")
+                os.system("../lib/wcdest/code/src/wcd -o " + self._r1_clustered_subtelomeric_reads_info_filepath + " -c " + self._r1_subtelomeric_reads_filepath + subtel_file + " >/dev/null 2>&1")
                 self._r1_clustered_subtelomeric_reads_filepath = self._get_clustered_tels(self._r1_telomeric_reads_filepath, self._r1_clustered_subtelomeric_reads_info_filepath, "forward", "subtel")
         print("Clustering results saved to '" + self._r1_clustered_subtelomeric_reads_filepath + "'")
         print("Done.\n")
@@ -229,7 +234,7 @@ class SequenceData:
         for subtel_file in os.listdir(self._r2_subtelomeric_reads_filepath):
             if subtel_file.endswith(".fasta"): 
                 self._r2_clustered_subtelomeric_reads_info_filepath = path_prefix + subtel_file.split(".")[0] + ".ans"
-                os.system("./wcdest/code/src/wcd -o " + self._r2_clustered_subtelomeric_reads_info_filepath + " -c " + self._r2_subtelomeric_reads_filepath + subtel_file + " >/dev/null 2>&1")
+                os.system("../lib/wcdest/code/src/wcd -o " + self._r2_clustered_subtelomeric_reads_info_filepath + " -c " + self._r2_subtelomeric_reads_filepath + subtel_file + " >/dev/null 2>&1")
                 self._r2_clustered_subtelomeric_reads_filepath = self._get_clustered_tels(self._r2_telomeric_reads_filepath, self._r2_clustered_subtelomeric_reads_info_filepath, "forward", "subtel")
         print("Clustering results saved to '" + self._r2_clustered_subtelomeric_reads_filepath + "'")        
         print("Done.\n")

@@ -3,11 +3,12 @@
 import sys
 import subprocess
 
-from treca.arguments import parse_arguments
 from treca.data import SequenceData
+from treca.arguments import parse_arguments, print_title
 
 def main():
     interleaved_fastq_path, r1_fastq_path, r2_fastq_path, out_directory = parse_arguments()
+    print_title()
 
     if interleaved_fastq_path is None:
         seperated_sequence_data = SequenceData(read_type="seperated", r1_read_filepath=r1_fastq_path, r2_read_filepath=r2_fastq_path, out_directory=out_directory)
