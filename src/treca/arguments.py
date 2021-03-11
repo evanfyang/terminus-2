@@ -7,9 +7,9 @@ from treca.validation import validate_file
 def parse_arguments():
     # define parser for arguments
     parser = argparse.ArgumentParser(prog="treca", description="TRECA: Telomeric Read Extraction, Clustering, and Assembly")
-    parser.add_argument("-i", metavar="interleaved.fastq", nargs=1, help="specify path to FASTQ file containing interleaved paired-end reads")
-    parser.add_argument("-r1", metavar="forward_reads.fastq", nargs=1, help="specify path to FASTQ file containing R1 pair-end reads")
-    parser.add_argument("-r2", metavar="reverse_reads.fastq", nargs=1, help="specify path to FASTQ file containing R2 pair-end reads")
+    parser.add_argument("-i", metavar="interleaved.fastq", help="specify path to FASTQ file containing interleaved paired-end reads")
+    parser.add_argument("-r1", metavar="forward_reads.fastq", help="specify path to FASTQ file containing R1 pair-end reads")
+    parser.add_argument("-r2", metavar="reverse_reads.fastq", help="specify path to FASTQ file containing R2 pair-end reads")
     parser.add_argument("-o", metavar="out_directory", default=None, help="specify path to directory to store output files")
     parser.add_argument("-n", metavar="n_ratio", default=0.5, help="throw out reads with a ratio of N's greater than specified")
     args = vars(parser.parse_args())

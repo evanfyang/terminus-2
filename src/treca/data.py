@@ -16,9 +16,9 @@ class SequenceData:
     def __init__(self, read_type, interleaved_read_filepath=None, r1_read_filepath=None, r2_read_filepath=None, out_directory=None):
         self._read_type = read_type
 
-        self._interleaved_read_filepath = interleaved_read_filepath 
-        self._r1_read_filepath = r1_read_filepath 
-        self._r2_read_filepath = r2_read_filepath
+        self._interleaved_reads_filepath = interleaved_read_filepath 
+        self._r1_reads_filepath = r1_read_filepath 
+        self._r2_reads_filepath = r2_read_filepath
 
         self._out_directory = out_directory
 
@@ -43,14 +43,14 @@ class SequenceData:
     def get_read_type(self):
         return self._read_type
 
-    def get_interleaved_read_filepath(self):
-        return self._interleaved_read_filepath
+    def get_interleaved_reads_filepath(self):
+        return self._interleaved_reads_filepath
 
-    def get_r1_read_filepath(self):
-        return self._r1_read_filepath
+    def get_r1_reads_filepath(self):
+        return self._r1_reads_filepath
 
-    def get_r2_read_filepath(self):
-        return self._r2_read_filepath
+    def get_r2_reads_filepath(self):
+        return self._r2_reads_filepath
     
     def get_out_directory(self):
         return self._out_directory
@@ -95,56 +95,56 @@ class SequenceData:
         if self._read_type == "interleaved":
             print("Extracting telomeric reads from an interleaved FASTQ dataset...")
             if self._out_directory == None: 
-                path_prefix = "/".join(self._interleaved_read_filepath.split("/")[0:-1]) + "/telomeric_reads/"
+                path_prefix = "/".join(self._interleaved_reads_filepath.split("/")[0:-1]) + "/telomeric_reads/"
             else:
                 path_prefix = self._out_directory + "/telomeric_reads/"
             
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
 
-            self._r1_telomeric_reads_filepath = path_prefix + self._interleaved_read_filepath.split("/")[-1].split(".")[0] + "r1_telomeric_reads.fasta"
+            self._r1_telomeric_reads_filepath = path_prefix + self._interleaved_reads_filepath.split("/")[-1].split(".")[0] + "_r1_telomeric_reads.fasta"
             r1_telomeric_reads_output = open(self._r1_telomeric_reads_filepath, "w+")
 
-            self._r2_telomeric_reads_filepath = path_prefix + self._interleaved_read_filepath.split("/")[-1].split(".")[0] + "r2_telomeric_reads.fasta"
+            self._r2_telomeric_reads_filepath = path_prefix + self._interleaved_reads_filepath.split("/")[-1].split(".")[0] + "_r2_telomeric_reads.fasta"
             r2_telomeric_reads_output = open(self._r2_telomeric_reads_filepath, "w+")
 
-            self._process_reads(self._interleaved_read_filepath, r1_telomeric_reads_output, r2_telomeric_reads_output)
+            self._process_reads(self._interleaved_reads_filepath, r1_telomeric_reads_output, r2_telomeric_reads_output)
             
             print("Done.\n")
             print("R1 telomeric reads saved to " + self._r1_telomeric_reads_filepath)
             print("R2 telomeric reads saved to " + self._r2_telomeric_reads_filepath)
-            print("\n")
+            print()
         if self._read_type == "seperated":
             print("Extracting telomeric reads from R1 FASTQ dataset...")
             
             if self._out_directory == None: 
-                path_prefix = "/".join(self._r1_read_filepath.split("/")[0:-1]) + "/telomeric_reads/"
+                path_prefix = "/".join(self._r1_reads_filepath.split("/")[0:-1]) + "/telomeric_reads/"
             else:
                 path_prefix = self._out_directory + "/telomeric_reads/"
 
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
-            self._r1_telomeric_reads_filepath = path_prefix + self._r1_read_filepath.split("/")[-1].split(".")[0] + "r1_telomeric_reads.fasta"
+            self._r1_telomeric_reads_filepath = path_prefix + self._r1_reads_filepath.split("/")[-1].split(".")[0] + "_r1_telomeric_reads.fasta"
             r1_telomeric_reads_output = open(self._r1_telomeric_reads_filepath, "w+")
 
-            self._process_reads(input_filepath=self._r1_telomeric_reads_filepath, r1_output=r1_telomeric_reads_output, r2_output=None)
+            self._process_reads(input_filepath=self._r1_reads_filepath, r1_output=r1_telomeric_reads_output, r2_output=None)
             print("Done.\n")
             
             print("Extracting telomeric reads from R2 FASTQ dataset...")
 
             if self._out_directory == None: 
-                path_prefix = "/".join(self._r2_read_filepath.split("/")[0:-1]) + "/telomeric_reads/"
+                path_prefix = "/".join(self._r2_reads_filepath.split("/")[0:-1]) + "/telomeric_reads/"
             else:
                 path_prefix = self._out_directory + "/telomeric_reads/"
 
             os.makedirs(os.path.dirname(path_prefix), exist_ok=True)
-            self._r2_telomeric_reads_filepath = path_prefix + self._r2_read_filepath.split("/")[-1].split(".")[0] + "r2_telomeric_reads.fasta"
+            self._r2_telomeric_reads_filepath = path_prefix + self._r2_reads_filepath.split("/")[-1].split(".")[0] + "_r2_telomeric_reads.fasta"
             r2_telomeric_reads_output = open(self._r2_telomeric_reads_filepath, "w+")
             
-            self._process_reads(input_filepath=self._r2_telomeric_reads_filepath, r1_output=None, r2_output=r2_telomeric_reads_output)
+            self._process_reads(input_filepath=self._r2_reads_filepath, r1_output=None, r2_output=r2_telomeric_reads_output)
             print("Done.\n")
 
             print("R1 telomeric reads saved to '" + self._r1_telomeric_reads_filepath + "'")
             print("R2 telomeric reads saved to '" + self._r2_telomeric_reads_filepath + "'")
-            print("\n")
+            print()
     
     def cluster_telomeric_reads(self):   
         # install and make wcd for clustering         # install and make wcd for clustering
